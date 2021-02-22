@@ -1,22 +1,25 @@
+import time
+
+from PIL import ImageFont
+from PIL.ImageDraw import ImageDraw
+from luma.core import device
+from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.virtual import viewport
 from luma.emulator.device import pygame
 from luma.led_matrix.device import max7219
-from luma.core.interface.serial import spi, noop
-from PIL import ImageFont
-import time
 
 
 class Animation(object):
 
-    def __init__(self, debug=False):
+    def __init__(self, debug: bool = False):
         self.debug = debug
 
     def run(self):
         self.animate()
         self.finish_animation()
 
-    def create_device(self):
+    def create_device(self) -> device.device:
         if self.debug:
             return pygame(width=32, height=8)
         else:
@@ -24,7 +27,7 @@ class Animation(object):
             return max7219(serial, cascaded=4, block_orientation=-90, contrast=0)
 
     @staticmethod
-    def create_font():
+    def create_font() -> ImageFont:
         return ImageFont.truetype('fonts/pixelsix10.ttf', 8)
 
     def animate(self):
@@ -38,26 +41,33 @@ class Animation(object):
 
 class HourAnimation(Animation):
 
-    def __init__(self, debug=False):
-        super(HourAnimation, self).__init__(debug=debug)
+    def __init__(self, debug: bool = False):
+        super(HourAnimation, self).__init__(debug)
 
     def animate(self):
-        device = self.create_device()
+        luma_device = self.create_device()
         current_time = time.strftime('%H:%M')
         font = HourAnimation.create_font()
-        HourAnimation.pacman_animation(device, current_time, font, -8, device.width + 1, 1)
+        HourAnimation.pacman_animation(luma_device, current_time, font, -8, luma_device.width + 1, 1)
         time.sleep(1)
-        HourAnimation.pacman_animation(device, current_time, font, device.width, -9, -1)
+        HourAnimation.pacman_animation(luma_device, current_time, font, luma_device.width, -9, -1)
 
     @staticmethod
-    def pacman_animation(device, current_time, font, start, stop, step):
+    def pacman_animation(
+            luma_device: device.device,
+            current_time: str,
+            font: ImageFont,
+            start: int,
+            stop: int,
+            step: int
+    ):
         reverse = step < 0
         phantom_gap = 10
         stop_with_gap = stop if not reverse else (stop - phantom_gap)
         for x in range(start, stop_with_gap, step):
             with canvas(device) as draw:
-                text_width, text_height = draw.textsize(current_time, font=font)
-                text_x, text_y = (device.width - text_width) / 2, (device.height - text_height) / 2
+                text_width, text_height = draw.textsize(current_time, font)
+                text_x, text_y = (luma_device.width - text_width) / 2, (luma_device.height - text_height) / 2
                 if x >= text_x:
                     draw.text(
                         (text_x, text_y),
@@ -66,14 +76,14 @@ class HourAnimation(Animation):
                         font=font,
                         spacing=1,
                     )
-                    draw.rectangle([(x, 0), (device.width, device.height)], fill='black')
+                    draw.rectangle([(x, 0), (luma_device.width, luma_device.height)], fill='black')
                 HourAnimation.draw_pacman(draw, x, reverse)
-                if reverse and x <= device.width - phantom_gap:
+                if reverse and x <= luma_device.width - phantom_gap:
                     HourAnimation.draw_phantom(draw, x + phantom_gap)
                 time.sleep(0.05)
 
     @staticmethod
-    def draw_pacman(draw, x, reverse=False):
+    def draw_pacman(draw: ImageDraw, x: int, reverse: bool = False):
         for y in [0, 7]:
             draw.line([(x + 2, y), (x + 5, y)], fill='white')
         for y in [1, 6]:
@@ -89,7 +99,7 @@ class HourAnimation(Animation):
                 draw.point((x + (1 if reverse else 6), 2), fill='black')
 
     @staticmethod
-    def draw_phantom(draw, x):
+    def draw_phantom(draw: ImageDraw, x: int):
         draw.line([(x + 1, 0), (x + 5, 0)], fill='white')
         for y in [1, 4, 5, 6]:
             draw.line([(x, y), (x + 6, y)], fill='white')
@@ -108,18 +118,18 @@ class HourAnimation(Animation):
 
 class TextAnimation(Animation):
 
-    def __init__(self, text, debug=False):
-        super(TextAnimation, self).__init__(debug=debug)
+    def __init__(self, text: str, debug: bool = False):
+        super(TextAnimation, self).__init__(debug)
         self.text = text
 
     def animate(self):
-        device = self.create_device()
+        luma_device = self.create_device()
         font = DateAnimation.create_font()
-        virtual = viewport(device, width=len(self.text) * 8 + 2 * device.width, height=device.height)
+        virtual = viewport(luma_device, width=len(self.text) * 8 + 2 * luma_device.width, height=luma_device.height)
         with canvas(virtual) as draw:
-            draw.text((device.width, 0), self.text, fill="white", font=font)
+            draw.text((luma_device.width, 0), self.text, fill='white', font=font)
             text_width = draw.textsize(self.text, font=font)[0]
-        for offset in range(device.width + text_width + 1):
+        for offset in range(luma_device.width + text_width + 1):
             virtual.set_position((offset, 0))
             time.sleep(0.05)
 
@@ -127,4 +137,4 @@ class TextAnimation(Animation):
 class DateAnimation(TextAnimation):
 
     def __init__(self, debug=False):
-        super(DateAnimation, self).__init__(time.strftime('%a %d %b %Y'), debug=debug)
+        super(DateAnimation, self).__init__(time.strftime('%a %d %b %Y'), debug)
