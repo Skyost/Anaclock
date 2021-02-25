@@ -2,7 +2,7 @@ import time
 
 from PIL import ImageFont
 from PIL.ImageDraw import ImageDraw
-from luma.core import device
+from luma.core.device import device
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.virtual import viewport
@@ -19,7 +19,7 @@ class Animation(object):
         self.animate()
         self.finish_animation()
 
-    def create_device(self) -> device.device:
+    def create_device(self) -> device:
         if self.debug:
             return pygame(width=32, height=8)
         else:
@@ -54,7 +54,7 @@ class HourAnimation(Animation):
 
     @staticmethod
     def pacman_animation(
-            luma_device: device.device,
+            luma_device: device,
             current_time: str,
             font: ImageFont,
             start: int,
@@ -65,7 +65,7 @@ class HourAnimation(Animation):
         phantom_gap = 10
         stop_with_gap = stop if not reverse else (stop - phantom_gap)
         for x in range(start, stop_with_gap, step):
-            with canvas(device) as draw:
+            with canvas(luma_device) as draw:
                 text_width, text_height = draw.textsize(current_time, font)
                 text_x, text_y = (luma_device.width - text_width) / 2, (luma_device.height - text_height) / 2
                 if x >= text_x:
