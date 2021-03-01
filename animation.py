@@ -122,13 +122,17 @@ class TextAnimation(Animation):
         super(TextAnimation, self).__init__(debug)
         self.text = text
 
+    def create_text(self):
+        return self.text
+
     def animate(self):
         luma_device = self.create_device()
+        text = self.create_text()
         font = DateAnimation.create_font()
-        virtual = viewport(luma_device, width=len(self.text) * 8 + 2 * luma_device.width, height=luma_device.height)
+        virtual = viewport(luma_device, width=len(text) * 8 + 2 * luma_device.width, height=luma_device.height)
         with canvas(virtual) as draw:
-            draw.text((luma_device.width, 0), self.text, fill='white', font=font)
-            text_width = draw.textsize(self.text, font=font)[0]
+            draw.text((luma_device.width, 0), text, fill='white', font=font)
+            text_width = draw.textsize(text, font=font)[0]
         for offset in range(luma_device.width + text_width + 1):
             virtual.set_position((offset, 0))
             time.sleep(0.05)
@@ -137,4 +141,7 @@ class TextAnimation(Animation):
 class DateAnimation(TextAnimation):
 
     def __init__(self, debug=False):
-        super(DateAnimation, self).__init__(time.strftime('%a %d %b %Y'), debug)
+        super(DateAnimation, self).__init__('%a %d %b %Y', debug)
+
+    def create_text(self):
+        return time.strftime(self.text)
