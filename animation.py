@@ -84,15 +84,16 @@ class HourAnimation(Animation):
 
     @staticmethod
     def draw_pacman(draw: ImageDraw, x: int, reverse: bool = False):
+        step = x % 8
         for y in [0, 7]:
             draw.line([(x + 2, y), (x + 5, y)], fill='white')
         for y in [1, 6]:
             draw.line([(x + 1, y), (x + 6, y)], fill='white')
         for y in [2, 3, 4, 5]:
             draw.line([(x, y), (x + 7, y)], fill='white')
-        if x % 2 == 0:
+        if 2 <= step <= 7:
             draw.rectangle([(x + (3 if reverse else 4), 3), (x + (0 if reverse else 7), 4)], fill='black')
-            if x % 4 == 2:
+            if 4 <= step <= 5:
                 draw.point((x + (0 if reverse else 7), 5), fill='black')
                 draw.point((x + (0 if reverse else 7), 2), fill='black')
                 draw.point((x + (1 if reverse else 6), 5), fill='black')
@@ -100,20 +101,24 @@ class HourAnimation(Animation):
 
     @staticmethod
     def draw_phantom(draw: ImageDraw, x: int):
+        eyes_step = x % 5
+        feet_step = x % 2
         draw.line([(x + 1, 0), (x + 5, 0)], fill='white')
-        for y in [1, 4, 5, 6]:
+        for y in [1, 3, 4, 5, 6]:
             draw.line([(x, y), (x + 6, y)], fill='white')
-        if x % 3 == 1:
-            draw.line([(x, 7), (x + 6, 7)], fill='white')
-            draw.line([(x, 3), (x + 6, 3)], fill='white')
-        else:
-            for offset in [0, 2, 4, 6]:
-                draw.point((x + offset, 7), fill='white')
-            for offset in [1, 4]:
-                draw.point((x + offset + x % 2, 3), fill='white')
         for y in [2, 3]:
             for offset in [0, 3, 6]:
                 draw.point((x + offset, y), fill='white')
+        if feet_step == 1:
+            for offset in [0, 2, 4, 6]:
+                draw.point((x + offset, 7), fill='white')
+        else:
+            draw.line([(x, 7), (x + 6, 7)], fill='white')
+            draw.line([(x, 3), (x + 6, 3)], fill='white')
+        if eyes_step <= 3:
+            eyes_offset = 1 if 0 <= eyes_step <= 1 else 0
+            for offset in [1, 4]:
+                draw.point((x + offset + eyes_offset, 3), fill='black')
 
 
 class TextAnimation(Animation):
