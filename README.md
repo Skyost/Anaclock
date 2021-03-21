@@ -1,6 +1,6 @@
 # Anaclock
 
-Displays hour and date on a Raspberry Pi connected to a 4x64 LED Matrix
+Displays hour and date on a Raspberry Pi connected to a 8x32 LED Matrix
 (from [AZ-Delivery](https://www.amazon.fr/gp/product/B079HVW652/)).
 
 ## Features
@@ -23,7 +23,7 @@ You need to install :
 Run `python anaclock.py --debug=True or False --test=True or False` with :
 
 * `debug = True` if you want to launch it via Pygame (needs Pygame and its dependencies to be installed),
-  pass `False` or nothing if you want to launch it using the 4x64 LED Matrix.
+  pass `False` or nothing if you want to launch it using the 8x32 LED Matrix.
 * `test = True` if you want to run the `Test` module,
   pass `False` or nothing if you don't want to.
 
